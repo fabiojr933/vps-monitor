@@ -65,4 +65,21 @@
 </main>
 
 </body>
+
+<script>
+async function refreshData() {
+  const res = await fetch('/api/status');
+  const data = await res.json();
+  if (!data.system) return;
+
+  document.querySelector('#hostname').innerText = data.system.hostname;
+  document.querySelector('#ipExternal').innerText = data.system.ipExternal;
+  document.querySelector('#cpuUsage').innerText = data.cpu.usage + '%';
+}
+
+setInterval(refreshData, 3000);
+refreshData();
+</script>
+
+
 </html>
