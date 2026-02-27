@@ -2,8 +2,8 @@
 class DashboardController {
 
     async index(req, res) {
-        try {          
-            res.render('index');
+        try {
+            res.render('index', { data: cache.get() || {} });
 
         } catch (error) {
             console.log('Erro: ' + error.message);
@@ -12,7 +12,7 @@ class DashboardController {
     }
     async teste(req, res) {
         try {
-           // const data = await systemService.getAll();
+            // const data = await systemService.getAll();
             res.render('teste');
 
         } catch (error) {

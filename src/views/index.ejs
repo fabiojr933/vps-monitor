@@ -11,75 +11,138 @@
 </head>
 <body>
 
+<%
+  const cpu = data?.cpu || {};
+  const memory = data?.memory || {};
+  const system = data?.system || {};
+  const ports = data?.ports || [];
+%>
+
 <main class="main-container container-fluid">
 
 <h1 class="vps-title">• VPS Monitor <small>v1.0.0</small></h1>
 
 <div class="row g-4">
 
-<div class="col-md-6 vps-card">
-  <h5><i class="bi bi-cpu"></i> CPU</h5>
-  <div class="stats-row"><span>Modelo</span><span><%= data.cpu.model %></span></div>
-  <div class="stats-row"><span>Cores / Threads</span><span><%= data.cpu.cores %> / <%= data.cpu.threads %></span></div>
-  <div class="stats-row"><span>Load</span><span><%= data.cpu.load %></span></div>
+  <!-- CPU -->
+  <div class="col-md-6 vps-card">
+    <h5><i class="bi bi-cpu"></i> CPU</h5>
 
-  <div class="progress-custom">
-    <div class="progress-bar-inner" style="width:<%= data.cpu.usage %>%"></div>
-  </div>
-</div>
-
-<div class="col-md-6 vps-card">
-  <h5><i class="bi bi-memory"></i> MEMÓRIA</h5>
-  <div class="stats-row"><span>Total</span><span><%= data.memory.total %> GB</span></div>
-  <div class="stats-row"><span>Usado</span><span><%= data.memory.used %> GB</span></div>
-  <div class="stats-row"><span>Livre</span><span><%= data.memory.free %> GB</span></div>
-
-  <div class="progress-custom">
-    <div class="progress-bar-inner" style="width:<%= data.memory.percent %>%"></div>
-  </div>
-</div>
-
-<div class="col-12 vps-card">
-  <h5><i class="bi bi-hdd"></i> SISTEMA</h5>
-  <div class="stats-row"><span>Hostname</span><span><%= data.system.hostname %></span></div>
-  <div class="stats-row"><span>OS</span><span><%= data.system.os %></span></div>
-  <div class="stats-row"><span>Arquitetura</span><span><%= data.system.arch %></span></div>
-  <div class="stats-row"><span>IP Externo</span><span class="text-neon"><%= data.system.ipExternal %></span></div>
-  <div class="stats-row"><span>Uptime</span><span><%= data.system.uptime %></span></div>
-</div>
-
-<div class="col-12 vps-card">
-  <h5><i class="bi bi-shield-lock"></i> PORTAS</h5>
-
-  <% data.ports.forEach(p => { %>
-    <div class="port-row">
-      <div class="port-number"><%= p.port %></div>
-      <div class="port-name"><%= p.name %> (<%= p.type %>)</div>
-      <div class="status-badge online">ONLINE</div>
+    <div class="stats-row">
+      <span>Modelo</span>
+      <span><%= cpu.model || '—' %></span>
     </div>
-  <% }) %>
-</div>
+
+    <div class="stats-row">
+      <span>Cores / Threads</span>
+      <span><%= cpu.cores || 0 %> / <%= cpu.threads || 0 %></span>
+    </div>
+
+    <div class="stats-row">
+      <span>Load</span>
+      <span><%= cpu.load || '0.00' %></span>
+    </div>
+
+    <div class="progress-custom">
+      <div class="progress-bar-inner" style="width:<%= cpu.usage || 0 %>%"></div>
+    </div>
+  </div>
+
+  <!-- MEMÓRIA -->
+  <div class="col-md-6 vps-card">
+    <h5><i class="bi bi-memory"></i> MEMÓRIA</h5>
+
+    <div class="stats-row">
+      <span>Total</span>
+      <span><%= memory.total || 0 %> GB</span>
+    </div>
+
+    <div class="stats-row">
+      <span>Usado</span>
+      <span><%= memory.used || 0 %> GB</span>
+    </div>
+
+    <div class="stats-row">
+      <span>Livre</span>
+      <span><%= memory.free || 0 %> GB</span>
+    </div>
+
+    <div class="progress-custom">
+      <div class="progress-bar-inner" style="width:<%= memory.percent || 0 %>%"></div>
+    </div>
+  </div>
+
+  <!-- SISTEMA -->
+  <div class="col-12 vps-card">
+    <h5><i class="bi bi-hdd"></i> SISTEMA</h5>
+
+    <div class="stats-row">
+      <span>Hostname</span>
+      <span id="hostname"><%= system.hostname || '—' %></span>
+    </div>
+
+    <div class="stats-row">
+      <span>OS</span>
+      <span><%= system.os || '—' %></span>
+    </div>
+
+    <div class="stats-row">
+      <span>Arquitetura</span>
+      <span><%= system.arch || '—' %></span>
+    </div>
+
+    <div class="stats-row">
+      <span>IP Externo</span>
+      <span id="ipExternal" class="text-neon"><%= system.ipExternal || '—' %></span>
+    </div>
+
+    <div class="stats-row">
+      <span>Uptime</span>
+      <span><%= system.uptime || '—' %></span>
+    </div>
+  </div>
+
+  <!-- PORTAS -->
+  <div class="col-12 vps-card">
+    <h5><i class="bi bi-shield-lock"></i> PORTAS</h5>
+
+    <% if (ports.length === 0) { %>
+      <div class="text-muted">Nenhuma porta monitorada</div>
+    <% } %>
+
+    <% ports.forEach(p => { %>
+      <div class="port-row">
+        <div class="port-number"><%= p.port %></div>
+        <div class="port-name"><%= p.name %> (<%= p.type %>)</div>
+        <div class="status-badge online">ONLINE</div>
+      </div>
+    <% }) %>
+  </div>
 
 </div>
-
 </main>
-
-</body>
 
 <script>
 async function refreshData() {
-  const res = await fetch('/api/status');
-  const data = await res.json();
-  if (!data.system) return;
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
 
-  document.querySelector('#hostname').innerText = data.system.hostname;
-  document.querySelector('#ipExternal').innerText = data.system.ipExternal;
-  document.querySelector('#cpuUsage').innerText = data.cpu.usage + '%';
+    if (!data?.system) return;
+
+    const hostname = document.getElementById('hostname');
+    const ipExternal = document.getElementById('ipExternal');
+
+    if (hostname) hostname.innerText = data.system.hostname || '—';
+    if (ipExternal) ipExternal.innerText = data.system.ipExternal || '—';
+
+  } catch (e) {
+    console.error('Erro ao atualizar dados', e);
+  }
 }
 
-setInterval(refreshData, 3000);
-refreshData();
+setInterval(refreshData, 5000);
 </script>
 
-
+</body>
 </html>
