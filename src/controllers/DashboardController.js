@@ -8,7 +8,7 @@ class DashboardController {
             res.render('index', { data });
 
         } catch (error) {
-            req.flash('error', 'Erro: ' + error.message);
+            console.log('Erro: ' + error.message);
             //  return res.redirect('/login');
         }
     }
@@ -18,7 +18,7 @@ class DashboardController {
             res.render('teste');
 
         } catch (error) {
-            req.flash('error', 'Erro: ' + error.message);
+            console.log('Erro: ' + error.message);
             //  return res.redirect('/login');
         }
     }
