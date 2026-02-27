@@ -1,0 +1,172 @@
+:root {
+    --bg-color: #0d1117;
+    --card-bg: #161b22;
+    --neon-green: #4ade80;
+    --text-main: #e6edf3;
+    --text-muted: #8b949e;
+    --border-color: #30363d;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    padding: 30px;
+}
+
+/* Typography */
+.vps-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.vps-title span { color: var(--neon-green); margin-right: 5px; }
+.vps-title small { font-size: 0.8rem; color: var(--neon-green); opacity: 0.8; }
+.vps-subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Header Elements */
+.uptime-badge {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+.refresh-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+.refresh-btn:hover { background: var(--neon-green); color: black; }
+
+/* Cards Styling */
+.vps-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.2s;
+}
+
+.card-header-vps {
+    color: var(--neon-green);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.stats-row span:first-child { color: var(--text-muted); }
+
+/* Progress Bars */
+.progress-custom {
+    background: rgba(255,255,255,0.05);
+    height: 6px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+.progress-bar-inner {
+    background: var(--neon-green);
+    height: 100%;
+    box-shadow: 0 0 10px var(--neon-green);
+}
+.label { font-size: 0.85rem; color: var(--text-muted); }
+.value { font-weight: bold; color: var(--text-main); }
+.mini-label { font-size: 0.65rem; color: #505050; font-weight: bold; }
+.text-neon { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+
+/* Ícones das Informações do Sistema */
+.icon-box-vps {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--text-muted);
+}
+
+.mini-label-top {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Estilização da Lista de Portas */
+.port-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.port-number {
+    width: 60px;
+    color: var(--neon-green);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.port-name {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Badges de Status (Pill Style) */
+.status-badge {
+    padding: 4px 15px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-badge.offline {
+    background: rgba(220, 53, 69, 0.1);
+    color: #ff4d4d;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.status-badge.online {
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--neon-green);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.footer-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #30363d;
+    margin-top: 20px;
+    text-transform: uppercase;
+}
