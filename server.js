@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
+const bodyParser = require('body-parser');
 const si = require('systeminformation');
 const axios = require('axios');
 const path = require('path');
@@ -10,6 +12,23 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views')); // Garante o caminho da pasta views
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public'))); // Garante o caminho da pasta public
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+    secret: 'chave-secreta-vps-2026', // Pode ser qualquer texto
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // Sessão dura 24 horas
+}));
+
+const SENHA_MESTRA = "Fabio1022@#$"; // <--- COLOQUE SUA SENHA AQUI
+
+const checkAuth = (req, res, next) => {
+    if (req.session.authenticated) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+};
 
 function formatUptime(seconds) {
     const d = Math.floor(seconds / (3600 * 24));
@@ -18,7 +37,21 @@ function formatUptime(seconds) {
     return `${d}d ${h}h ${m}m`;
 }
 
-app.get('/', async (req, res) => {
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+// ROTA QUE PROCESSA A SENHA
+app.post('/login', (req, res) => {
+    const { password } = req.body;
+    if (password === SENHA_MESTRA) {
+        req.session.authenticated = true;
+        res.redirect('/');
+    } else {
+        // Se errar, redireciona ou mostra erro (aqui vamos para o Google como exemplo de "outra página")
+        res.render('login', { error: 'Senha incorreta! Tente novamente.' });
+    }
+});
+app.get('/', checkAuth, async (req, res) => {
     try {
         
         // Coleta de dados básicos
