@@ -18,16 +18,18 @@ function formatUptime(seconds) {
 app.get('/', async (req, res) => {
     try {
         // Coleta de dados em paralelo para performance
-        const [os, cpu, mem, disk, net, load, currentLoad, users, networkStats] = await Promise.all([
+        cconst [os, cpu, mem, disk, net, loadData, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
             si.cpu(),
             si.mem(),
             si.fsSize(),
             si.networkInterfaces(),
+            si.load(), // Alterado para si.load() que traz o avgLoad corretamente
             si.currentLoad(),
-            si.fullLoad(),
             si.users(),
-            si.networkStats()
+            si.networkStats(),
+            si.networkConnections(),
+            si.processes()
         ]);
 
         // IP Externo (via API externa)
@@ -47,11 +49,12 @@ app.get('/', async (req, res) => {
                 arquitetura: os.arch,
                 uptime: formatUptime(si.time().uptime)
             },
-            cpu: {
+           cpu: {
                 modelo: cpu.brand,
-                cores: `${cpu.cores} / ${cpu.physicalCores}`,
-                load: load.avgLoad.join(', '),
-                uso: Math.round(currentLoad)
+                cores: `${cpu.cores} / ${cpu.threads || cpu.cores}`,
+                // GARANTIA DE QUE É UM ARRAY ANTES DE DAR JOIN
+                load: Array.isArray(loadData.avgLoad) ? loadData.avgLoad.join(', ') : 'N/A',
+                uso: Math.round(currentLoad.currentLoad) // O uso real vem de currentLoad.currentLoad
             },
             memoria: {
                 total: (mem.total / 1024 / 1024 / 1024).toFixed(2) + ' GB',
