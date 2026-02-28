@@ -17,28 +17,29 @@ function formatUptime(seconds) {
 
 app.get('/', async (req, res) => {
     try {
-        // Coleta os dados necessários
-        const [os, cpu, mem, disk, net, currentLoad, users, networkStats, connections, processes] = await Promise.all([
+        // Coleta de dados básicos
+        const [os, cpu, mem, disk, net, load, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
             si.cpu(),
             si.mem(),
             si.fsSize(),
             si.networkInterfaces(),
-            si.currentLoad(), // Este traz tanto o uso % quanto o avgLoad
+            si.fullLoad(),      // Aqui pegamos o Load Average real
+            si.currentLoad(),   // Aqui pegamos a porcentagem de uso atual
             si.users(),
             si.networkStats(),
             si.networkConnections(),
             si.processes()
         ]);
 
-        // IP Externo
-        let publicIp = 'Desconhecido';
+        // IP Externo com Timeout curto
+        let publicIp = 'N/A';
         try {
-            const response = await axios.get('https://api.ipify.org?format=json', { timeout: 1500 });
+            const response = await axios.get('https://api.ipify.org?format=json', { timeout: 1000 });
             publicIp = response.data.ip;
-        } catch (e) { publicIp = 'N/A'; }
+        } catch (e) { publicIp = 'Erro IP'; }
 
-        // Portas que você quer monitorar (exemplo manual)
+        // Mapeamento de Portas
         const monitorPortas = [
             { porta: 22, nome: 'SSH', tipo: 'TCP' },
             { porta: 80, nome: 'HTTP', tipo: 'TCP' },
@@ -47,7 +48,7 @@ app.get('/', async (req, res) => {
 
         const data = {
             sistema: {
-                hostname: os.hostname,
+                hostname: os.hostname || 'localhost',
                 ipExterno: publicIp,
                 os: `${os.distro} ${os.release}`,
                 ipLocal: net.find(i => !i.internal && i.ip4)?.ip4 || '127.0.0.1',
@@ -57,9 +58,9 @@ app.get('/', async (req, res) => {
             cpu: {
                 modelo: cpu.brand,
                 cores: `${cpu.cores} / ${cpu.threads || cpu.cores}`,
-                // O avgLoad fica dentro do currentLoad
-                load: currentLoad.avgLoad ? currentLoad.avgLoad.join(', ') : 'N/A',
-                uso: Math.round(currentLoad.currentLoad)
+                // CORREÇÃO: load.avgLoad é onde ficam as médias de 1, 5 e 15 min
+                load: (load.avgLoad && Array.isArray(load.avgLoad)) ? load.avgLoad.join(', ') : '0.00, 0.00, 0.00',
+                uso: Math.round(currentLoad.currentLoad || 0)
             },
             memoria: {
                 total: (mem.total / 1024 / 1024 / 1024).toFixed(2) + ' GB',
@@ -68,19 +69,19 @@ app.get('/', async (req, res) => {
                 percent: Math.round((mem.active / mem.total) * 100)
             },
             disco: {
-                fs: disk[0]?.fs || 'N/A',
-                type: disk[0]?.type || 'N/A',
+                fs: disk[0]?.fs || 'n/a',
+                type: disk[0]?.type || 'n/a',
                 mount: disk[0]?.mount || '/',
-                total: (disk[0]?.size / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-                uso: (disk[0]?.used / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+                total: disk[0] ? (disk[0].size / 1024 / 1024 / 1024).toFixed(2) + ' GB' : '0 GB',
+                uso: disk[0] ? (disk[0].used / 1024 / 1024 / 1024).toFixed(2) + ' GB' : '0 GB',
                 percent: Math.round(disk[0]?.use || 0)
             },
             rede: {
                 rx: networkStats[0] ? (networkStats[0].rx_bytes / 1024 / 1024).toFixed(2) + ' MB' : '0 MB',
                 tx: networkStats[0] ? (networkStats[0].tx_bytes / 1024 / 1024).toFixed(2) + ' MB' : '0 MB',
-                conexoes: connections.length,
-                processos: processes.all,
-                usuarios: users.length
+                conexoes: connections.length || 0,
+                processos: processes.all || 0,
+                usuarios: users.length || 0
             },
             portas: monitorPortas.map(p => ({
                 ...p,
@@ -90,10 +91,11 @@ app.get('/', async (req, res) => {
         };
 
         res.render('index', { data });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Erro ao coletar dados: " + error.message);
+        console.error("Erro interno:", error);
+        res.status(500).send("Erro ao processar dados da VPS: " + error.message);
     }
 });
 
-app.listen(port, () => console.log(`Monitor rodando em http://localhost:${port}`));
+app.listen(port, () => console.log(`Servidor rodando em http://localhost:${port}`));
