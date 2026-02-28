@@ -91,11 +91,12 @@ app.get('/', checkAuth, async (req, res) => {
       publicIp = r.data.ip;
     } catch {}
 
-    /* ===== LATÊNCIA ===== */
-    let latency = 'N/A';
+   /* ===== LATÊNCIA ===== */
+    let latencia = 'N/A';
     try {
-      latency = (await si.inetLatency('8.8.8.8')) + ' ms';
+      latencia = (await si.inetLatency('8.8.8.8')) + ' ms';
     } catch {}
+
 
     /* ===== PORTAS ===== */
     const activePorts = [];
@@ -120,14 +121,14 @@ app.get('/', checkAuth, async (req, res) => {
 
     const data = {
       sistema: {
-        hostname: os.hostname,
-        ipExterno: publicIp,
-        ipLocal: net.find(i => !i.internal && i.ip4)?.ip4 || '127.0.0.1',
-        os: `${os.distro} ${os.release}`,
-        arquitetura: os.arch,
-        uptime: formatUptime(si.time().uptime),
-        latencia
-      },
+          hostname: os.hostname,
+          ipExterno: publicIp,
+          ipLocal: net.find(i => !i.internal && i.ip4)?.ip4 || '127.0.0.1',
+          os: `${os.distro} ${os.release}`,
+          arquitetura: os.arch,
+          uptime: formatUptime(si.time().uptime),
+          latencia
+        },
 
       cpu: {
         modelo: cpu.brand,
