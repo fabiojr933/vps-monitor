@@ -19,6 +19,26 @@ function formatUptime(seconds) {
 
 app.get('/', async (req, res) => {
     try {
+        const activePorts = [];
+        const portSet = new Set();
+        
+        // Filtramos apenas portas únicas e que estejam no estado 'LISTEN' (Ouvindo)
+        // Se quiser ver todas as conexões, remova o filtro .state === 'LISTEN'
+        for (const conn of connections) {
+            const portNum = conn.localPort;
+            if (portNum && !portSet.has(portNum)) {
+                portSet.add(portNum);
+                activePorts.push({
+                    porta: portNum,
+                    nome: conn.process || 'Serviço Ativo',
+                    tipo: (conn.protocol || 'TCP').toUpperCase(),
+                    status: 'online' // Se está na lista de conexões, está online
+                });
+            }
+        }
+        // Ordena da menor porta para a maior
+        activePorts.sort((a, b) => a.porta - b.porta);
+
         // Coleta de dados básicos
         const [os, cpu, mem, disk, net, load, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
@@ -85,10 +105,8 @@ app.get('/', async (req, res) => {
                 processos: processes.all || 0,
                 usuarios: users.length || 0
             },
-            portas: monitorPortas.map(p => ({
-                ...p,
-                status: connections.some(c => c.localPort === p.porta.toString()) ? 'online' : 'offline'
-            })),
+            portas: activePorts, 
+            
             lastSync: new Date().toLocaleTimeString('pt-BR')
         };
 
