@@ -4,16 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VPS Monitor v1.0.0</title>
+
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
-<main id="main" class="main-container">
+<main class="main-container">
   <div class="container-fluid">
-    
+
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h1 class="vps-title"><span>•</span> VPS Monitor <small>v1.0.0</small></h1>
@@ -23,232 +26,140 @@
         <div class="uptime-badge">
           <i class="bi bi-clock"></i> <%= data.sistema.uptime %>
         </div>
-        <button onclick="location.reload()" class="refresh-btn"><i class="bi bi-arrow-clockwise"></i></button>
+        <button onclick="location.reload()" class="refresh-btn">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
       </div>
     </div>
 
-<div class="row mb-4">
-    <div class="col-12">
-      <div class="vps-card p-3 d-flex flex-wrap gap-3">
-        <span class="badge <%= data.alertas.cpuAlta ? 'bg-danger' : 'bg-success' %>">
-          CPU <%= data.alertas.cpuAlta ? 'ALTA' : 'OK' %>
-        </span>
-        <span class="badge <%= data.alertas.memoriaAlta ? 'bg-danger' : 'bg-success' %>">
-          MEMÓRIA <%= data.alertas.memoriaAlta ? 'ALTA' : 'OK' %>
-        </span>
-        <span class="badge <%= data.alertas.discoCheio ? 'bg-danger' : 'bg-success' %>">
-          DISCO <%= data.alertas.discoCheio ? 'CRÍTICO' : 'OK' %>
-        </span>
-        <span class="badge <%= data.alertas.temperaturaAlta ? 'bg-danger' : 'bg-success' %>">
-          TEMP <%= data.alertas.temperaturaAlta ? 'ALTA' : 'OK' %>
-        </span>
+    <!-- ALERTAS -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="vps-card p-3 d-flex flex-wrap gap-3">
+          <span class="badge <%= data.alertas.cpuAlta ? 'bg-danger' : 'bg-success' %>">CPU</span>
+          <span class="badge <%= data.alertas.memoriaAlta ? 'bg-danger' : 'bg-success' %>">MEMÓRIA</span>
+          <span class="badge <%= data.alertas.discoCheio ? 'bg-danger' : 'bg-success' %>">DISCO</span>
+          <span class="badge <%= data.alertas.temperaturaAlta ? 'bg-danger' : 'bg-success' %>">TEMP</span>
+        </div>
       </div>
     </div>
-  </div>
 
+    <!-- CPU / MEMÓRIA -->
     <div class="row g-4">
       <div class="col-md-6">
         <div class="vps-card">
-          <div class="card-header-vps">
-            <i class="bi bi-cpu"></i> CPU
-          </div>
+          <div class="card-header-vps"><i class="bi bi-cpu"></i> CPU</div>
           <div class="card-body-vps">
-            <div class="stats-row"><span>Modelo</span><span class="fw-bold"><%= data.cpu.modelo %></span></div>
+            <div class="stats-row"><span>Modelo</span><span><%= data.cpu.modelo %></span></div>
             <div class="stats-row"><span>Cores / Threads</span><span><%= data.cpu.cores %></span></div>
-            <div class="stats-row"><span>Load Average</span><span class="fw-bold"><%= data.cpu.load %></span></div>
-            
-            <div class="progress-section mt-4">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="label">Uso de CPU</span>
-                <span class="value"><%= data.cpu.uso %>%</span>
+            <div class="stats-row"><span>Load</span><span><%= data.cpu.load %></span></div>
+            <div class="stats-row"><span>Temperatura</span><span><%= data.cpu.temperatura %> °C</span></div>
+
+            <div class="progress-section mt-3">
+              <div class="d-flex justify-content-between">
+                <span>Uso de CPU</span>
+                <span><%= data.cpu.uso %>%</span>
               </div>
               <div class="progress-custom">
-                <div class="progress-bar-inner" style="width: <%= data.cpu.uso %>%"></div>
-              </div>
-              <div class="d-flex justify-content-between mini-label mt-1">
-                <span><%= data.cpu.uso %>% USADO</span>
-                <span>100% TOTAL</span>
+                <div class="progress-bar-inner" style="width:<%= data.cpu.uso %>%"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- CPU / MEMÓRIA -->
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="vps-card">
-        <div class="card-header-vps"><i class="bi bi-cpu"></i> CPU</div>
-        <div class="card-body-vps">
-          <div class="stats-row"><span>Modelo</span><span class="fw-bold"><%= data.cpu.modelo %></span></div>
-          <div class="stats-row"><span>Cores / Threads</span><span><%= data.cpu.cores %></span></div>
-          <div class="stats-row"><span>Load Average</span><span><%= data.cpu.load %></span></div>
-          <div class="stats-row"><span>Temperatura</span><span class="fw-bold"><%= data.cpu.temperatura %> °C</span></div>
+      <div class="col-md-6">
+        <div class="vps-card">
+          <div class="card-header-vps"><i class="bi bi-memory"></i> MEMÓRIA</div>
+          <div class="card-body-vps">
+            <div class="stats-row"><span>Total</span><span><%= data.memoria.total %></span></div>
+            <div class="stats-row"><span>Em Uso</span><span><%= data.memoria.uso %></span></div>
+            <div class="stats-row"><span>Livre</span><span><%= data.memoria.livre %></span></div>
 
-          <div class="progress-section mt-4">
-            <div class="d-flex justify-content-between">
-              <span>Uso de CPU</span>
-              <span><%= data.cpu.uso %>%</span>
-            </div>
-            <div class="progress-custom">
-              <div class="progress-bar-inner" style="width:<%= data.cpu.uso %>%"></div>
+            <div class="progress-section mt-3">
+              <div class="d-flex justify-content-between">
+                <span>Uso de RAM</span>
+                <span><%= data.memoria.percent %>%</span>
+              </div>
+              <div class="progress-custom">
+                <div class="progress-bar-inner" style="width:<%= data.memoria.percent %>%"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-md-6">
-      <div class="vps-card">
-        <div class="card-header-vps"><i class="bi bi-memory"></i> MEMÓRIA</div>
-        <div class="card-body-vps">
-          <div class="stats-row"><span>Total</span><span><%= data.memoria.total %></span></div>
-          <div class="stats-row"><span>Em Uso</span><span><%= data.memoria.uso %></span></div>
-          <div class="stats-row"><span>Livre</span><span><%= data.memoria.livre %></span></div>
+    <!-- DISCO / REDE -->
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="vps-card">
+          <div class="card-header-vps"><i class="bi bi-hdd"></i> DISCO</div>
+          <div class="card-body-vps">
+            <div class="stats-row"><span>Total</span><span><%= data.disco.total %></span></div>
+            <div class="stats-row"><span>Em Uso</span><span><%= data.disco.uso %></span></div>
+            <div class="stats-row"><span>Leitura</span><span><%= data.disco.leitura %></span></div>
+            <div class="stats-row"><span>Escrita</span><span><%= data.disco.escrita %></span></div>
 
-          <div class="progress-section mt-4">
-            <div class="d-flex justify-content-between">
-              <span>Uso de RAM</span>
-              <span><%= data.memoria.percent %>%</span>
-            </div>
-            <div class="progress-custom">
-              <div class="progress-bar-inner" style="width:<%= data.memoria.percent %>%"></div>
+            <div class="progress-section mt-3">
+              <div class="d-flex justify-content-between">
+                <span>Uso de Disco</span>
+                <span><%= data.disco.percent %>%</span>
+              </div>
+              <div class="progress-custom">
+                <div class="progress-bar-inner" style="width:<%= data.disco.percent %>%"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-<!-- DISCO / IO -->
-  <div class="row g-4 mt-1">
-    <div class="col-md-6">
-      <div class="vps-card">
-        <div class="card-header-vps"><i class="bi bi-hdd-network"></i> DISCO</div>
-        <div class="card-body-vps">
-          <div class="stats-row"><span>Total</span><span><%= data.disco.total %></span></div>
-          <div class="stats-row"><span>Em Uso</span><span><%= data.disco.uso %></span></div>
-          <div class="stats-row"><span>Leitura</span><span><%= data.disco.leitura %></span></div>
-          <div class="stats-row"><span>Escrita</span><span><%= data.disco.escrita %></span></div>
-
-          <div class="progress-section mt-4">
-            <div class="d-flex justify-content-between">
-              <span>Uso de Disco</span>
-              <span><%= data.disco.percent %>%</span>
-            </div>
-            <div class="progress-custom">
-              <div class="progress-bar-inner" style="width:<%= data.disco.percent %>%"></div>
-            </div>
+      <div class="col-md-6">
+        <div class="vps-card">
+          <div class="card-header-vps"><i class="bi bi-diagram-3"></i> REDE</div>
+          <div class="card-body-vps">
+            <div class="stats-row"><span>RX</span><span><%= data.rede.rx %></span></div>
+            <div class="stats-row"><span>TX</span><span><%= data.rede.tx %></span></div>
+            <div class="stats-row"><span>Conexões</span><span><%= data.rede.conexoes %></span></div>
+            <div class="stats-row"><span>Processos</span><span><%= data.rede.processos %></span></div>
+            <div class="stats-row"><span>Usuários</span><span><%= data.rede.usuarios %></span></div>
           </div>
         </div>
       </div>
     </div>
 
-       <div class="col-md-6">
-      <div class="vps-card">
-        <div class="card-header-vps"><i class="bi bi-diagram-3"></i> REDE</div>
-        <div class="card-body-vps">
-          <div class="stats-row"><span>RX</span><span><%= data.rede.rx %></span></div>
-          <div class="stats-row"><span>TX</span><span><%= data.rede.tx %></span></div>
-          <div class="stats-row"><span>Conexões</span><span><%= data.rede.conexoes %></span></div>
-          <div class="stats-row"><span>Processos</span><span><%= data.rede.processos %></span></div>
-          <div class="stats-row"><span>Usuários</span><span><%= data.rede.usuarios %></span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+    <!-- SISTEMA -->
     <div class="row mt-4">
       <div class="col-12">
         <div class="vps-card p-4">
-          <div class="card-header-vps mb-4">
+          <div class="card-header-vps mb-3">
             <i class="bi bi-hdd-stack"></i> INFORMAÇÕES DO SISTEMA
           </div>
+
           <div class="row g-4">
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-terminal"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">HOSTNAME</div>
-                <div class="fw-bold"><%= data.sistema.hostname %></div>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-ubuntu"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">OS</div>
-                <div class="fw-bold"><%= data.sistema.os %></div>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-activity"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">ARQUITETURA</div>
-                <div class="fw-bold"><%= data.sistema.arquitetura %></div>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-globe"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">IP EXTERNO</div>
-                <div class="fw-bold text-neon"><%= data.sistema.ipExterno %></div>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-diagram-2"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">IP LOCAL</div>
-                <div class="fw-bold"><%= data.sistema.ipLocal %></div>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="icon-box-vps"><i class="bi bi-clock-history"></i></div>
-              <div class="ms-3">
-                <div class="mini-label-top">UPTIME</div>
-                <div class="fw-bold"><%= data.sistema.uptime %></div>
-              </div>
-            </div>
+            <div class="col-md-4"><b>Hostname:</b> <%= data.sistema.hostname %></div>
+            <div class="col-md-4"><b>OS:</b> <%= data.sistema.os %></div>
+            <div class="col-md-4"><b>Arquitetura:</b> <%= data.sistema.arquitetura %></div>
+            <div class="col-md-4"><b>IP Externo:</b> <%= data.sistema.ipExterno %></div>
+            <div class="col-md-4"><b>IP Local:</b> <%= data.sistema.ipLocal %></div>
+            <div class="col-md-4"><b>Uptime:</b> <%= data.sistema.uptime %></div>
           </div>
         </div>
       </div>
     </div>
 
-     <!-- PORTAS -->
-  <div class="row mt-4 mb-4">
-    <div class="col-12">
-      <div class="vps-card">
-        <div class="card-header-vps"><i class="bi bi-shield-lock"></i> PORTAS</div>
-        <div class="port-list">
-          <% if (data.portas.length) { %>
-            <% data.portas.forEach(p => { %>
-              <div class="port-row">
-                <div class="port-number"><%= p.porta %></div>
-                <div class="port-name"><%= p.nome %> (<%= p.tipo %>)</div>
-                <div class="status-badge <%= p.status %>">● <%= p.status.toUpperCase() %></div>
-              </div>
-            <% }) %>
-          <% } else { %>
-            <div class="p-3 text-center">Nenhuma porta ativa</div>
-          <% } %>
-        </div>
-      </div>
+    <!-- FOOTER -->
+    <div class="d-flex justify-content-between footer-text mt-4">
+      <span>LAST SYNC: <%= data.lastSync %></span>
+      <span>VPS MONITOR © 2026 - FOX SISTEMAS</span>
     </div>
-  </div>
-
-  <div class="d-flex justify-content-between footer-text">
-    <span>LAST SYNC: <%= data.lastSync %></span>
-    <span>VPS MONITOR PRO © 2026 - FOX SISTEMAS</span>
-  </div>
 
   </div>
 </main>
 
-</body>
-
 <script>
-  // Atualiza a página a cada 30 segundos (30000 milissegundos)
-  setTimeout(function(){
-     window.location.reload();
-  }, 30000);
+  setTimeout(() => location.reload(), 30000);
 </script>
 
+</body>
 </html>
