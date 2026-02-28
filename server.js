@@ -51,133 +51,134 @@ app.post('/login', (req, res) => {
     res.render('login', { error: 'Senha incorreta! Tente novamente.' });
 });
 
-/* ================= DASHBOARD ================= */
 app.get('/', checkAuth, async (req, res) => {
+  try {
+
+    const [
+      os, cpu, mem, disk, net,
+      loadRaw, currentLoad, users,
+      networkStatsRaw, connections,
+      processes, tempRaw, diskIORaw
+    ] = await Promise.all([
+      si.osInfo(),
+      si.cpu(),
+      si.mem(),
+      si.fsSize(),
+      si.networkInterfaces(),
+      si.fullLoad().catch(() => null),
+      si.currentLoad(),
+      si.users(),
+      si.networkStats().catch(() => []),
+      si.networkConnections(),
+      si.processes(),
+      si.cpuTemperature().catch(() => ({})),
+      si.disksIO().catch(() => ({}))
+    ]);
+
+    /* ===== NORMALIZAÇÃO SEGURA ===== */
+    const load = loadRaw?.avgLoad || [0, 0, 0];
+    const temp = tempRaw?.main || 0;
+    const diskIO = {
+      r: diskIORaw?.rIO_sec || 0,
+      w: diskIORaw?.wIO_sec || 0
+    };
+    const networkStats = networkStatsRaw[0] || { rx_bytes: 0, tx_bytes: 0 };
+
+    /* ===== IP EXTERNO ===== */
+    let publicIp = 'N/A';
     try {
-        const [
-            os, cpu, mem, disk, net,
-            load, currentLoad, users,
-            networkStats, connections,
-            processes, temp, diskIO
-        ] = await Promise.all([
-            si.osInfo(),
-            si.cpu(),
-            si.mem(),
-            si.fsSize(),
-            si.networkInterfaces(),
-            si.fullLoad(),
-            si.currentLoad(),
-            si.users(),
-            si.networkStats(),
-            si.networkConnections(),
-            si.processes(),
-            si.cpuTemperature(),
-            si.disksIO()
-        ]);
+      const r = await axios.get('https://api.ipify.org?format=json', { timeout: 1000 });
+      publicIp = r.data.ip;
+    } catch {}
 
-        /* ===== IP EXTERNO ===== */
-        let publicIp = 'N/A';
-        try {
-            const response = await axios.get('https://api.ipify.org?format=json', { timeout: 1000 });
-            publicIp = response.data.ip;
-        } catch {
-            publicIp = 'Erro IP';
-        }
+    /* ===== LATÊNCIA ===== */
+    let latency = 'N/A';
+    try {
+      latency = (await si.inetLatency('8.8.8.8')) + ' ms';
+    } catch {}
 
-        /* ===== LATÊNCIA ===== */
-        let latency = 'N/A';
-        try {
-            latency = (await si.inetLatency('8.8.8.8')) + ' ms';
-        } catch {
-            latency = 'Erro';
-        }
+    /* ===== PORTAS ===== */
+    const activePorts = [];
+    const portSet = new Set();
 
-        /* ===== PORTAS ===== */
-        const activePorts = [];
-        const portSet = new Set();
-
-        for (const conn of connections) {
-            if (conn.localPort && !portSet.has(conn.localPort)) {
-                portSet.add(conn.localPort);
-                activePorts.push({
-                    porta: conn.localPort,
-                    nome: conn.process || 'Serviço Ativo',
-                    tipo: (conn.protocol || 'TCP').toUpperCase(),
-                    status: 'online'
-                });
-            }
-        }
-        activePorts.sort((a, b) => a.porta - b.porta);
-
-        /* ===== ALERTAS ===== */
-        const cpuUso = Math.round(currentLoad.currentLoad || 0);
-        const memPercent = Math.round((mem.active / mem.total) * 100);
-        const diskPercent = Math.round(disk[0]?.use || 0);
-
-        const alertas = {
-            cpuAlta: cpuUso >= 85,
-            memoriaAlta: memPercent >= 85,
-            discoCheio: diskPercent >= 90,
-            temperaturaAlta: (temp.main || 0) >= 80
-        };
-
-        /* ===== DATA ===== */
-        const data = {
-            sistema: {
-                hostname: os.hostname,
-                ipExterno: publicIp,
-                ipLocal: net.find(i => !i.internal && i.ip4)?.ip4 || '127.0.0.1',
-                os: `${os.distro} ${os.release}`,
-                arquitetura: os.arch,
-                uptime: formatUptime(si.time().uptime),
-                latencia
-            },
-
-            cpu: {
-                modelo: cpu.brand,
-                cores: `${cpu.cores} / ${cpu.threads || cpu.cores}`,
-                load: load.avgLoad?.join(', ') || '0.00, 0.00, 0.00',
-                uso: cpuUso,
-                temperatura: temp.main || 0
-            },
-
-            memoria: {
-                total: (mem.total / 1024 ** 3).toFixed(2) + ' GB',
-                uso: (mem.active / 1024 ** 3).toFixed(2) + ' GB',
-                livre: (mem.available / 1024 ** 3).toFixed(2) + ' GB',
-                percent: memPercent
-            },
-
-            disco: {
-                fs: disk[0]?.fs,
-                mount: disk[0]?.mount || '/',
-                total: (disk[0]?.size / 1024 ** 3).toFixed(2) + ' GB',
-                uso: (disk[0]?.used / 1024 ** 3).toFixed(2) + ' GB',
-                percent: diskPercent,
-                leitura: (diskIO.rIO_sec / 1024 / 1024).toFixed(2) + ' MB/s',
-                escrita: (diskIO.wIO_sec / 1024 / 1024).toFixed(2) + ' MB/s'
-            },
-
-            rede: {
-                rx: (networkStats[0]?.rx_bytes / 1024 / 1024).toFixed(2) + ' MB',
-                tx: (networkStats[0]?.tx_bytes / 1024 / 1024).toFixed(2) + ' MB',
-                conexoes: connections.length,
-                processos: processes.all,
-                usuarios: users.length
-            },
-
-            portas: activePorts,
-            alertas,
-            lastSync: new Date().toLocaleTimeString('pt-BR')
-        };
-
-        res.render('index', { data });
-
-    } catch (error) {
-        console.error('Erro interno:', error);
-        res.status(500).send('Erro ao processar dados da VPS');
+    for (const c of connections) {
+      if (c.localPort && !portSet.has(c.localPort)) {
+        portSet.add(c.localPort);
+        activePorts.push({
+          porta: c.localPort,
+          nome: c.process || 'Serviço',
+          tipo: (c.protocol || 'TCP').toUpperCase(),
+          status: 'online'
+        });
+      }
     }
+
+    /* ===== MÉTRICAS ===== */
+    const cpuUso = Math.round(currentLoad.currentLoad || 0);
+    const memPercent = Math.round((mem.active / mem.total) * 100);
+    const diskPercent = Math.round(disk[0]?.use || 0);
+
+    const data = {
+      sistema: {
+        hostname: os.hostname,
+        ipExterno: publicIp,
+        ipLocal: net.find(i => !i.internal && i.ip4)?.ip4 || '127.0.0.1',
+        os: `${os.distro} ${os.release}`,
+        arquitetura: os.arch,
+        uptime: formatUptime(si.time().uptime),
+        latencia
+      },
+
+      cpu: {
+        modelo: cpu.brand,
+        cores: `${cpu.cores}/${cpu.threads || cpu.cores}`,
+        load: load.join(', '),
+        uso: cpuUso,
+        temperatura: temp
+      },
+
+      memoria: {
+        total: (mem.total / 1024 ** 3).toFixed(2) + ' GB',
+        uso: (mem.active / 1024 ** 3).toFixed(2) + ' GB',
+        livre: (mem.available / 1024 ** 3).toFixed(2) + ' GB',
+        percent: memPercent
+      },
+
+      disco: {
+        total: (disk[0]?.size / 1024 ** 3).toFixed(2) + ' GB',
+        uso: (disk[0]?.used / 1024 ** 3).toFixed(2) + ' GB',
+        percent: diskPercent,
+        leitura: (diskIO.r / 1024 / 1024).toFixed(2) + ' MB/s',
+        escrita: (diskIO.w / 1024 / 1024).toFixed(2) + ' MB/s'
+      },
+
+      rede: {
+        rx: (networkStats.rx_bytes / 1024 / 1024).toFixed(2) + ' MB',
+        tx: (networkStats.tx_bytes / 1024 / 1024).toFixed(2) + ' MB',
+        conexoes: connections.length,
+        processos: processes.all,
+        usuarios: users.length
+      },
+
+      portas: activePorts,
+      alertas: {
+        cpuAlta: cpuUso >= 85,
+        memoriaAlta: memPercent >= 85,
+        discoCheio: diskPercent >= 90,
+        temperaturaAlta: temp >= 80
+      },
+
+      lastSync: new Date().toLocaleTimeString('pt-BR')
+    };
+
+    res.render('index', { data });
+
+  } catch (err) {
+    console.error('ERRO REAL:', err);
+    res.status(500).send('Erro ao processar dados da VPS');
+  }
 });
+
 
 /* ================= START ================= */
 app.listen(port, () => {
