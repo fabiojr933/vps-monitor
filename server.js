@@ -6,7 +6,9 @@ const app = express();
 const port = 3000;
 
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+app.set('views', path.join(__dirname, 'views')); // Garante o caminho da pasta views
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public'))); // Garante o caminho da pasta public
 
 function formatUptime(seconds) {
     const d = Math.floor(seconds / (3600 * 24));
