@@ -1,13 +1,13 @@
 const express = require('express');
 const si = require('systeminformation');
 const axios = require('axios');
+const path = require('path');
 const app = express();
 const port = 3000;
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-// Função para formatar segundos em uptime legível
 function formatUptime(seconds) {
     const d = Math.floor(seconds / (3600 * 24));
     const h = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -17,29 +17,34 @@ function formatUptime(seconds) {
 
 app.get('/', async (req, res) => {
     try {
-        // Coleta de dados em paralelo para performance
-        const [os, cpu, mem, disk, net, loadData, currentLoad, users, networkStats, connections, processes] = await Promise.all([
+        // Coleta os dados necessários
+        const [os, cpu, mem, disk, net, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
             si.cpu(),
             si.mem(),
             si.fsSize(),
             si.networkInterfaces(),
-            si.load(), // Alterado para si.load() que traz o avgLoad corretamente
-            si.currentLoad(),
+            si.currentLoad(), // Este traz tanto o uso % quanto o avgLoad
             si.users(),
             si.networkStats(),
             si.networkConnections(),
             si.processes()
         ]);
 
-        // IP Externo (via API externa)
+        // IP Externo
         let publicIp = 'Desconhecido';
         try {
-            const response = await axios.get('https://api.ipify.org?format=json', { timeout: 2000 });
+            const response = await axios.get('https://api.ipify.org?format=json', { timeout: 1500 });
             publicIp = response.data.ip;
-        } catch (e) { publicIp = 'Erro ao obter'; }
+        } catch (e) { publicIp = 'N/A'; }
 
-        // Formatação de Dados
+        // Portas que você quer monitorar (exemplo manual)
+        const monitorPortas = [
+            { porta: 22, nome: 'SSH', tipo: 'TCP' },
+            { porta: 80, nome: 'HTTP', tipo: 'TCP' },
+            { porta: 3000, nome: 'Monitor', tipo: 'TCP' }
+        ];
+
         const data = {
             sistema: {
                 hostname: os.hostname,
@@ -49,12 +54,12 @@ app.get('/', async (req, res) => {
                 arquitetura: os.arch,
                 uptime: formatUptime(si.time().uptime)
             },
-           cpu: {
+            cpu: {
                 modelo: cpu.brand,
                 cores: `${cpu.cores} / ${cpu.threads || cpu.cores}`,
-                // GARANTIA DE QUE É UM ARRAY ANTES DE DAR JOIN
-                load: Array.isArray(loadData.avgLoad) ? loadData.avgLoad.join(', ') : 'N/A',
-                uso: Math.round(currentLoad.currentLoad) // O uso real vem de currentLoad.currentLoad
+                // O avgLoad fica dentro do currentLoad
+                load: currentLoad.avgLoad ? currentLoad.avgLoad.join(', ') : 'N/A',
+                uso: Math.round(currentLoad.currentLoad)
             },
             memoria: {
                 total: (mem.total / 1024 / 1024 / 1024).toFixed(2) + ' GB',
@@ -63,30 +68,30 @@ app.get('/', async (req, res) => {
                 percent: Math.round((mem.active / mem.total) * 100)
             },
             disco: {
-                fs: disk[0].fs,
-                type: disk[0].type,
-                mount: disk[0].mount,
-                total: (disk[0].size / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-                uso: (disk[0].used / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-                percent: Math.round(disk[0].use)
+                fs: disk[0]?.fs || 'N/A',
+                type: disk[0]?.type || 'N/A',
+                mount: disk[0]?.mount || '/',
+                total: (disk[0]?.size / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+                uso: (disk[0]?.used / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+                percent: Math.round(disk[0]?.use || 0)
             },
             rede: {
-                rx: (networkStats[0].rx_bytes / 1024 / 1024).toFixed(2) + ' MB',
-                tx: (networkStats[0].tx_bytes / 1024 / 1024).toFixed(2) + ' MB',
-                conexoes: (await si.networkConnections()).length,
-                processos: (await si.processes()).all,
+                rx: networkStats[0] ? (networkStats[0].rx_bytes / 1024 / 1024).toFixed(2) + ' MB' : '0 MB',
+                tx: networkStats[0] ? (networkStats[0].tx_bytes / 1024 / 1024).toFixed(2) + ' MB' : '0 MB',
+                conexoes: connections.length,
+                processos: processes.all,
                 usuarios: users.length
             },
-            portas: [
-                { porta: 22, nome: 'SSH', tipo: 'TCP' },
-                { porta: 80, nome: 'HTTP', tipo: 'TCP' },
-                { porta: 3000, nome: 'Monitor', tipo: 'TCP' }
-            ],
+            portas: monitorPortas.map(p => ({
+                ...p,
+                status: connections.some(c => c.localPort === p.porta.toString()) ? 'online' : 'offline'
+            })),
             lastSync: new Date().toLocaleTimeString('pt-BR')
         };
 
         res.render('index', { data });
     } catch (error) {
+        console.error(error);
         res.status(500).send("Erro ao coletar dados: " + error.message);
     }
 });
