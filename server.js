@@ -18,7 +18,7 @@ function formatUptime(seconds) {
 app.get('/', async (req, res) => {
     try {
         // Coleta de dados em paralelo para performance
-        cconst [os, cpu, mem, disk, net, loadData, currentLoad, users, networkStats, connections, processes] = await Promise.all([
+        const [os, cpu, mem, disk, net, loadData, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
             si.cpu(),
             si.mem(),
