@@ -27,6 +27,25 @@
       </div>
     </div>
 
+<div class="row mb-4">
+    <div class="col-12">
+      <div class="vps-card p-3 d-flex flex-wrap gap-3">
+        <span class="badge <%= data.alertas.cpuAlta ? 'bg-danger' : 'bg-success' %>">
+          CPU <%= data.alertas.cpuAlta ? 'ALTA' : 'OK' %>
+        </span>
+        <span class="badge <%= data.alertas.memoriaAlta ? 'bg-danger' : 'bg-success' %>">
+          MEMÓRIA <%= data.alertas.memoriaAlta ? 'ALTA' : 'OK' %>
+        </span>
+        <span class="badge <%= data.alertas.discoCheio ? 'bg-danger' : 'bg-success' %>">
+          DISCO <%= data.alertas.discoCheio ? 'CRÍTICO' : 'OK' %>
+        </span>
+        <span class="badge <%= data.alertas.temperaturaAlta ? 'bg-danger' : 'bg-success' %>">
+          TEMP <%= data.alertas.temperaturaAlta ? 'ALTA' : 'OK' %>
+        </span>
+      </div>
+    </div>
+  </div>
+
     <div class="row g-4">
       <div class="col-md-6">
         <div class="vps-card">
@@ -55,77 +74,89 @@
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="vps-card">
-          <div class="card-header-vps">
-            <i class="bi bi-memory"></i> MEMÓRIA
-          </div>
-          <div class="card-body-vps">
-            <div class="stats-row"><span>Total</span><span><%= data.memoria.total %></span></div>
-            <div class="stats-row"><span>Em Uso</span><span><%= data.memoria.uso %></span></div>
-            <div class="stats-row"><span>Livre</span><span><%= data.memoria.livre %></span></div>
-            
-            <div class="progress-section mt-4">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="label">Memória RAM</span>
-                <span class="value"><%= data.memoria.percent %>%</span>
-              </div>
-              <div class="progress-custom">
-                <div class="progress-bar-inner" style="width: <%= data.memoria.percent %>%"></div>
-              </div>
-              <div class="d-flex justify-content-between mini-label mt-1">
-                <span><%= data.memoria.uso %> USADO</span>
-                <span><%= data.memoria.total %> TOTAL</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- CPU / MEMÓRIA -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="vps-card">
+        <div class="card-header-vps"><i class="bi bi-cpu"></i> CPU</div>
+        <div class="card-body-vps">
+          <div class="stats-row"><span>Modelo</span><span class="fw-bold"><%= data.cpu.modelo %></span></div>
+          <div class="stats-row"><span>Cores / Threads</span><span><%= data.cpu.cores %></span></div>
+          <div class="stats-row"><span>Load Average</span><span><%= data.cpu.load %></span></div>
+          <div class="stats-row"><span>Temperatura</span><span class="fw-bold"><%= data.cpu.temperatura %> °C</span></div>
 
-      <div class="col-md-6">
-        <div class="vps-card">
-          <div class="card-header-vps">
-            <i class="bi bi-hdd-network"></i> ESPAÇO EM DISCO
-          </div>
-          <div class="card-body-vps">
-            <div class="stats-row"><span>Filesystem</span><span><%= data.disco.fs %></span></div>
-            <div class="stats-row"><span>Tipo</span><span><%= data.disco.type %></span></div>
-            <div class="stats-row"><span>Mount Point</span><span><%= data.disco.mount %></span></div>
-            <div class="stats-row"><span>Total</span><span><%= data.disco.total %></span></div>
-            <div class="stats-row"><span>Livre</span><span><%= data.memoria.livre %></span></div>
-            
-            <div class="progress-section mt-4">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="label">Uso de Disco</span>
-                <span class="value"><%= data.disco.percent %>%</span>
-              </div>
-              <div class="progress-custom">
-                <div class="progress-bar-inner" style="width: <%= data.disco.percent %>%"></div>
-              </div>
-              <div class="d-flex justify-content-between mini-label mt-1">
-                <span><%= data.disco.uso %> USADO</span>
-                <span><%= data.disco.total %> TOTAL</span>
-              </div>
+          <div class="progress-section mt-4">
+            <div class="d-flex justify-content-between">
+              <span>Uso de CPU</span>
+              <span><%= data.cpu.uso %>%</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="vps-card">
-          <div class="card-header-vps">
-            <i class="bi bi-diagram-3"></i> REDE
-          </div>
-          <div class="card-body-vps">
-            <div class="stats-row"><span>Dados Recebidos (RX)</span><span><%= data.rede.rx %></span></div>
-            <div class="stats-row"><span>Dados Enviados (TX)</span><span><%= data.rede.tx %></span></div>
-            <div class="stats-row"><span>Conexões Ativas</span><span class="text-neon"><%= data.rede.conexoes %></span></div>
-            <div class="stats-row"><span>Processos Ativos</span><span><%= data.rede.processos %></span></div>
-            <div class="stats-row"><span>Usuários Conectados</span><span><%= data.rede.usuarios %></span></div>
+            <div class="progress-custom">
+              <div class="progress-bar-inner" style="width:<%= data.cpu.uso %>%"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="col-md-6">
+      <div class="vps-card">
+        <div class="card-header-vps"><i class="bi bi-memory"></i> MEMÓRIA</div>
+        <div class="card-body-vps">
+          <div class="stats-row"><span>Total</span><span><%= data.memoria.total %></span></div>
+          <div class="stats-row"><span>Em Uso</span><span><%= data.memoria.uso %></span></div>
+          <div class="stats-row"><span>Livre</span><span><%= data.memoria.livre %></span></div>
+
+          <div class="progress-section mt-4">
+            <div class="d-flex justify-content-between">
+              <span>Uso de RAM</span>
+              <span><%= data.memoria.percent %>%</span>
+            </div>
+            <div class="progress-custom">
+              <div class="progress-bar-inner" style="width:<%= data.memoria.percent %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- DISCO / IO -->
+  <div class="row g-4 mt-1">
+    <div class="col-md-6">
+      <div class="vps-card">
+        <div class="card-header-vps"><i class="bi bi-hdd-network"></i> DISCO</div>
+        <div class="card-body-vps">
+          <div class="stats-row"><span>Total</span><span><%= data.disco.total %></span></div>
+          <div class="stats-row"><span>Em Uso</span><span><%= data.disco.uso %></span></div>
+          <div class="stats-row"><span>Leitura</span><span><%= data.disco.leitura %></span></div>
+          <div class="stats-row"><span>Escrita</span><span><%= data.disco.escrita %></span></div>
+
+          <div class="progress-section mt-4">
+            <div class="d-flex justify-content-between">
+              <span>Uso de Disco</span>
+              <span><%= data.disco.percent %>%</span>
+            </div>
+            <div class="progress-custom">
+              <div class="progress-bar-inner" style="width:<%= data.disco.percent %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+       <div class="col-md-6">
+      <div class="vps-card">
+        <div class="card-header-vps"><i class="bi bi-diagram-3"></i> REDE</div>
+        <div class="card-body-vps">
+          <div class="stats-row"><span>RX</span><span><%= data.rede.rx %></span></div>
+          <div class="stats-row"><span>TX</span><span><%= data.rede.tx %></span></div>
+          <div class="stats-row"><span>Conexões</span><span><%= data.rede.conexoes %></span></div>
+          <div class="stats-row"><span>Processos</span><span><%= data.rede.processos %></span></div>
+          <div class="stats-row"><span>Usuários</span><span><%= data.rede.usuarios %></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
     <div class="row mt-4">
       <div class="col-12">
@@ -181,35 +212,32 @@
       </div>
     </div>
 
-    <div class="row mt-4 mb-5">
-      <div class="col-12">
-        <div class="vps-card">
-          <div class="card-header-vps mb-4">
-            <i class="bi bi-shield-lock"></i> PORTAS
-          </div>
-          <div class="port-list">
-          <% if (data.portas.length > 0) { %>
+     <!-- PORTAS -->
+  <div class="row mt-4 mb-4">
+    <div class="col-12">
+      <div class="vps-card">
+        <div class="card-header-vps"><i class="bi bi-shield-lock"></i> PORTAS</div>
+        <div class="port-list">
+          <% if (data.portas.length) { %>
             <% data.portas.forEach(p => { %>
               <div class="port-row">
                 <div class="port-number"><%= p.porta %></div>
-                <div class="port-name"><%= p.nome %> <span class="fw-bold">(<%= p.tipo %>)</span></div>
-                <div class="status-badge <%= p.status %>">
-                  <span>•</span> <%= p.status.toUpperCase() %>
-                </div>
+                <div class="port-name"><%= p.nome %> (<%= p.tipo %>)</div>
+                <div class="status-badge <%= p.status %>">● <%= p.status.toUpperCase() %></div>
               </div>
             <% }) %>
           <% } else { %>
-            <div class="p-3 text-center fw-bold">Nenhuma porta ativa detectada.</div>
+            <div class="p-3 text-center">Nenhuma porta ativa</div>
           <% } %>
-        </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="d-flex justify-content-between footer-text">
-      <span>LAST SYNC: <%= data.lastSync %></span>
-      <span>VPS MONITOR PRO © 2026 - FOX SISTEMAS</span>
-    </div>
+  <div class="d-flex justify-content-between footer-text">
+    <span>LAST SYNC: <%= data.lastSync %></span>
+    <span>VPS MONITOR PRO © 2026 - FOX SISTEMAS</span>
+  </div>
 
   </div>
 </main>
