@@ -44,6 +44,27 @@
       </div>
     </div>
 
+
+    <!-- SISTEMA -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="vps-card p-4">
+          <div class="card-header-vps mb-3">
+            <i class="bi bi-hdd-stack"></i> INFORMAÇÕES DO SISTEMA
+          </div>
+
+          <div class="row g-4">
+            <div class="col-md-4"><b>Hostname:</b> <%= data.sistema.hostname %></div>
+            <div class="col-md-4"><b>OS:</b> <%= data.sistema.os %></div>
+            <div class="col-md-4"><b>Arquitetura:</b> <%= data.sistema.arquitetura %></div>
+            <div class="col-md-4"><b>IP Externo:</b> <%= data.sistema.ipExterno %></div>
+            <div class="col-md-4"><b>IP Local:</b> <%= data.sistema.ipLocal %></div>
+            <div class="col-md-4"><b>Uptime:</b> <%= data.sistema.uptime %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- CPU / MEMÓRIA -->
     <div class="row g-4">
       <div class="col-md-6">
@@ -128,22 +149,28 @@
       </div>
     </div>
 
-    <!-- SISTEMA -->
-    <div class="row mt-4">
-      <div class="col-12">
-        <div class="vps-card p-4">
-          <div class="card-header-vps mb-3">
-            <i class="bi bi-hdd-stack"></i> INFORMAÇÕES DO SISTEMA
-          </div>
 
-          <div class="row g-4">
-            <div class="col-md-4"><b>Hostname:</b> <%= data.sistema.hostname %></div>
-            <div class="col-md-4"><b>OS:</b> <%= data.sistema.os %></div>
-            <div class="col-md-4"><b>Arquitetura:</b> <%= data.sistema.arquitetura %></div>
-            <div class="col-md-4"><b>IP Externo:</b> <%= data.sistema.ipExterno %></div>
-            <div class="col-md-4"><b>IP Local:</b> <%= data.sistema.ipLocal %></div>
-            <div class="col-md-4"><b>Uptime:</b> <%= data.sistema.uptime %></div>
+ <div class="row mt-4 mb-5">
+      <div class="col-12">
+        <div class="vps-card">
+          <div class="card-header-vps mb-4">
+            <i class="bi bi-shield-lock"></i> PORTAS
           </div>
+          <div class="port-list">
+          <% if (data.portas.length > 0) { %>
+            <% data.portas.forEach(p => { %>
+              <div class="port-row">
+                <div class="port-number"><%= p.porta %></div>
+                <div class="port-name"><%= p.nome %> <span class="fw-bold">(<%= p.tipo %>)</span></div>
+                <div class="status-badge <%= p.status %>">
+                  <span>•</span> <%= p.status.toUpperCase() %>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="p-3 text-center fw-bold">Nenhuma porta ativa detectada.</div>
+          <% } %>
+        </div>
         </div>
       </div>
     </div>
