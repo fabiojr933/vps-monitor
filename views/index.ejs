@@ -188,16 +188,20 @@
             <i class="bi bi-shield-lock"></i> PORTAS
           </div>
           <div class="port-list">
-            <% data.portas.forEach(port => { %>
+          <% if (data.portas.length > 0) { %>
+            <% data.portas.forEach(p => { %>
               <div class="port-row">
-                <div class="port-number"><%= port.port %></div>
-                <div class="port-name"><%= port.name %> <span class="text-muted">(<%= port.type %>)</span></div>
-                <div class="status-badge <%= port.status %>">
-                  <span>•</span> <%= port.status.toUpperCase() %>
+                <div class="port-number"><%= p.porta %></div>
+                <div class="port-name"><%= p.nome %> <span class="text-muted">(<%= p.tipo %>)</span></div>
+                <div class="status-badge <%= p.status %>">
+                  <span>•</span> <%= p.status.toUpperCase() %>
                 </div>
               </div>
             <% }) %>
-          </div>
+          <% } else { %>
+            <div class="p-3 text-center text-muted">Nenhuma porta ativa detectada.</div>
+          <% } %>
+        </div>
         </div>
       </div>
     </div>
