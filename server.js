@@ -19,26 +19,7 @@ function formatUptime(seconds) {
 
 app.get('/', async (req, res) => {
     try {
-        const activePorts = [];
-        const portSet = new Set();
         
-        // Filtramos apenas portas únicas e que estejam no estado 'LISTEN' (Ouvindo)
-        // Se quiser ver todas as conexões, remova o filtro .state === 'LISTEN'
-        for (const conn of connections) {
-            const portNum = conn.localPort;
-            if (portNum && !portSet.has(portNum)) {
-                portSet.add(portNum);
-                activePorts.push({
-                    porta: portNum,
-                    nome: conn.process || 'Serviço Ativo',
-                    tipo: (conn.protocol || 'TCP').toUpperCase(),
-                    status: 'online' // Se está na lista de conexões, está online
-                });
-            }
-        }
-        // Ordena da menor porta para a maior
-        activePorts.sort((a, b) => a.porta - b.porta);
-
         // Coleta de dados básicos
         const [os, cpu, mem, disk, net, load, currentLoad, users, networkStats, connections, processes] = await Promise.all([
             si.osInfo(),
@@ -62,11 +43,25 @@ app.get('/', async (req, res) => {
         } catch (e) { publicIp = 'Erro IP'; }
 
         // Mapeamento de Portas
-        const monitorPortas = [
-            { porta: 22, nome: 'SSH', tipo: 'TCP' },
-            { porta: 80, nome: 'HTTP', tipo: 'TCP' },
-            { porta: 3000, nome: 'Monitor', tipo: 'TCP' }
-        ];
+        const activePorts = [];
+        const portSet = new Set();
+        
+        // Filtramos apenas portas únicas e que estejam no estado 'LISTEN' (Ouvindo)
+        // Se quiser ver todas as conexões, remova o filtro .state === 'LISTEN'
+        for (const conn of connections) {
+            const portNum = conn.localPort;
+            if (portNum && !portSet.has(portNum)) {
+                portSet.add(portNum);
+                activePorts.push({
+                    porta: portNum,
+                    nome: conn.process || 'Serviço Ativo',
+                    tipo: (conn.protocol || 'TCP').toUpperCase(),
+                    status: 'online' // Se está na lista de conexões, está online
+                });
+            }
+        }
+        // Ordena da menor porta para a maior
+        activePorts.sort((a, b) => a.porta - b.porta);
 
         const data = {
             sistema: {
